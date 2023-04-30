@@ -11,6 +11,13 @@ This way, handling the positioning of views, animating their movement, ... based
 
 Check the Python class `PyWM` and c struct `wm_server` for a start, as well as newms `Layout`. 
 
+## BUT WHY PYTHON?????
+
+when you use a custom configuration DSL, i.e sway/i3/hyprland, you can set values but not do anything creative to get said values.
+
+With python, you can do lots of complex(or not so complex) and creative things to get values to set.
+
+
 ## Install
 
 you should have no reason to install this, it is installed as a dependency of newm-atha
@@ -43,14 +50,14 @@ pip3 install git+https://git.sr.ht/~atha/pywm-atha
 
 In case of issues, clone the repo and execute `meson build && ninja -C build` in order to debug.
 
-### Configuration
+## Configuration
 
 Configuration is handled via key-value pairs given to the `PyWM` contructor:
 
 | Key                             | Default    | Description                                                                                             |
 |---------------------------------|------------|---------------------------------------------------------------------------------------------------------|
 | `enable_xwayland`               | `False`    | Boolean: Start `XWayland`                                                                               |
-| `xkb_model`                     |            | String: Keyboard model (`xkb`)                                                                          |
+| `xkb_model`                     | 	       | String: Keyboard model (`xkb`)                                                                          |
 | `xkb_layout`                    |            | String: Keyboard layout (`xkb`)                                                                         |
 | `xkb_variant`                   |            | String: Keyboard variant (`xkb`)                                                                        |
 | `xkb_options`                   |            | String: Keyboard options (`xkb`)                                                                        |
