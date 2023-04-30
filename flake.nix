@@ -17,10 +17,10 @@
       inherit (pkgs.lib) optionals;
     in
     {
-      packages.pywm = (
+      packages.pywm-atha = (
         pkgs.python3.pkgs.buildPythonPackage rec {
-          pname = "pywm"; # TODO: change this to pywm-atha, and version change but that may be a little scary to do.
-          version = "0.3alpha";
+          pname = "pywm-atha";
+          version = "0.4alpha";
 
           # BEGIN fucking subprojects bug workaround for 'src = ./.'
           srcs = [
