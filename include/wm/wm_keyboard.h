@@ -1,5 +1,4 @@
-#ifndef WM_KEYBOARD_H
-#define WM_KEYBOARD_H
+#pragma once
 
 #include <wayland-server.h>
 #include <wlr/types/wlr_input_device.h>
@@ -20,6 +19,3 @@ struct wm_keyboard {
 void wm_keyboard_init(struct wm_keyboard* keyboard, struct wm_seat* seat, struct wlr_input_device* input_device);
 void wm_keyboard_destroy(struct wm_keyboard* keyboard);
 void wm_keyboard_reconfigure(struct wm_keyboard* keyboard);
-
-
-#endif

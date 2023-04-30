@@ -1,5 +1,4 @@
-#ifndef WM_CONFIG_H
-#define WM_CONFIG_H
+#pragma once
 
 #include <stdbool.h>
 #include <wayland-server.h>
@@ -75,4 +74,3 @@ void wm_config_destroy(struct wm_config *config);
 
 enum wm_renderer_mode wm_config_get_renderer_mode(struct wm_config* config);
 
-#endif

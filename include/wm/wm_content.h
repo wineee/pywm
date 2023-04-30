@@ -1,5 +1,4 @@
-#ifndef WM_CONTENT_H
-#define WM_CONTENT_H
+#pragma once
 
 #include <stdio.h>
 #include <wayland-server.h>
@@ -99,4 +98,4 @@ static inline void wm_content_printf(FILE* file, struct wm_content* content){
     (*content->vtable->printf)(file, content);
 }
 
-#endif
+

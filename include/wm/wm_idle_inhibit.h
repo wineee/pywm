@@ -1,5 +1,4 @@
-#ifndef WM_IDLE_INHIBIT_H
-#define WM_IDLE_INHIBIT_H
+#pragma once
 
 #include <wlr/types/wlr_idle_inhibit_v1.h>
 
@@ -26,5 +25,3 @@ struct wm_idle_inhibit {
 
 void wm_idle_inhibit_init(struct wm_idle_inhibit* inhibit, struct wm_server* server);
 void wm_idle_inhibit_destroy(struct wm_idle_inhibit* inhibit);
-
-#endif

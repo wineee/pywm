@@ -1,5 +1,4 @@
-#ifndef WM_CURSOR_H
-#define WM_CURSOR_H
+#pragma once
 
 #include <wayland-server.h>
 #include <wlr/types/wlr_cursor.h>
@@ -64,4 +63,3 @@ void wm_cursor_update(struct wm_cursor* cursor);
 void wm_cursor_reconfigure(struct wm_cursor* cursor);
 
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef WM_DRAG_H
-#define WM_DRAG_H
+#pragma once
 
 #include <wlr/types/wlr_data_device.h>
 
@@ -25,6 +24,3 @@ struct wm_drag {
 void wm_drag_init(struct wm_drag* drag, struct wm_seat* seat, struct wlr_drag* wlr_drag);
 void wm_drag_update_position(struct wm_drag* drag);
 bool wm_content_is_drag(struct wm_content* content);
-
-
-#endif // WM_DRAG_H

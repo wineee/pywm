@@ -1,5 +1,4 @@
-#ifndef WM_COMPOSITE_H
-#define WM_COMPOSITE_H
+#pragma once
 
 #include <stdbool.h>
 #include <wayland-server.h>
@@ -44,5 +43,3 @@ struct wm_compose_chain {
 
 struct wm_compose_chain* wm_compose_chain_from_damage(struct wm_server* server, struct wm_output* output, pixman_region32_t* damage);
 void wm_compose_chain_free(struct wm_compose_chain* chain);
-
-#endif

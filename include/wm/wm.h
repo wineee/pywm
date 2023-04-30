@@ -1,5 +1,4 @@
-#ifndef WM_H
-#define WM_H
+#pragma once
 
 #include <time.h>
 #include <stdbool.h>
@@ -96,5 +95,3 @@ void wm_callback_view_event(struct wm_view* view, const char* event);
 void wm_callback_update_view(struct wm_view* view);
 void wm_callback_update();
 void wm_callback_ready();
-
-#endif
