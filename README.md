@@ -1,26 +1,24 @@
-# pywm - backend for [newm](https://github.com/jbuchermn/newm)
+# pywm-atha - a fork of pywm
 
-Unfortunately, newm as well as pywm are currently unmaintained.
+~~Unfortunately, newm as well as pywm are currently unmaintained.~~
 
-pywm is an abstraction layer for [newm](https://github.com/jbuchermn/newm) encapsulating all c code.
+pywm-atha is an abstraction layer for [newm-atha](https://sr.ht/~atha/newm-atha) encapsulating all c code.
 
-Basically this is a very tiny compositor built on top of [wlroots](https://github.com/swaywm/wlroots), making all the assumptions that wlroots does not. On the Python side pywm exposes Wayland clients (XDG and XWayland) as so-called views and passes along all input. This way, handling the positioning of views, animating their movement, ... based on keystrokes or touchpad inputs (i.e. the logical, not performance-critical part of any compositor) is possible Python-side, whereas rendering and all other performance-critical aspects are handled by c code.
+Basically this is a very tiny compositor built on top of [wlroots](https://github.com/swaywm/wlroots), making all the assumptions that wlroots does not.
+On the Python side pywm exposes Wayland clients (XDG and XWayland) as so-called views and passes along all input. 
+This way, handling the positioning of views, animating their movement, ... based on keystrokes or touchpad inputs (i.e. the logical, not performance-critical part of any compositor) is possible Python-side,
+ whereas rendering and all other performance-critical aspects are handled by C code.
 
 Check the Python class `PyWM` and c struct `wm_server` for a start, as well as newms `Layout`. 
 
-See also [pywm-fullscreen](https://github.com/jbuchermn/pywm-fullscreen) for a trivial implementation opening one application in fullscreen.
+## Install
 
-## Attention
+you should have no reason to install this, it is installed as a dependency of newm-atha
 
-v0.3 with a better renderer implementation supporting blur has been merged into master. There are still some bugs around but I consider it an alpha stage.
 
-## Installing
+### Build Dependenices
 
-If you install [newm](https://github.com/jbuchermn/newm) via the AUR, pywm is installed automatically.
-
-### Prerequisites
-
-Prerequisites for PyWM, apart from Python, are given by [wlroots](https://github.com/swaywm/wlroots):
+Prerequisites for PyWM, apart from Python, are given by [wlroots](https://gitlab.freedesktop.org/wlroots/wlroots/):
 
 * python and pip
 * gcc, meson and ninja
@@ -38,12 +36,9 @@ Prerequisites for PyWM, apart from Python, are given by [wlroots](https://github
 * pixman
 * libseat
 
-### Install
-
-Compilation is handled by meson and started automatically via pip (you need to install prerequisites first):
 
 ```
-pip3 install git+https://github.com/jbuchermn/pywm
+pip3 install git+https://git.sr.ht/~atha/pywm-atha
 ```
 
 In case of issues, clone the repo and execute `meson build && ninja -C build` in order to debug.

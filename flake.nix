@@ -1,5 +1,5 @@
 {
-  description = "pywm - Wayland compositor core";
+  description = "pywm-atha - core of newm-atha";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
