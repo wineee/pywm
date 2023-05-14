@@ -22,12 +22,12 @@
           pname = "pywm-atha";
           version = "0.4alpha";
 
-          # BEGIN fucking subprojects bug workaround for 'src = ./.'
+          # BEGIN f**king subprojects bug workaround for 'src = ./.'
           srcs = [
             ./.
             (builtins.fetchGit {
-              url = "https://gitlab.freedesktop.org/wlroots/wlroots";
-              rev = "e279266f714c7122e9ad97d56d047313f78cfdbe";
+              url = "https://gitlab.freedesktop.org/wlroots/wlroots.git";
+              rev = "e279266f714c7122e9ad97d56d047313f78cfdbe"; # wlroots 16
               submodules = true;
             })
           ];
@@ -60,7 +60,7 @@
             ls -al ./subprojects/wlroots/
             echo "--------------------------------"
           '';
-          # END Fucking subprojects bug workaround
+          # END F**king subprojects bug workaround
 
           mesonFlags = if has_xwayland then [ "-Dxwayland=enabled" ] else [];
 
