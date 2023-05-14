@@ -135,7 +135,7 @@ void wm_seat_destroy(struct wm_seat* seat) {
 void wm_seat_add_input_device(struct wm_seat* seat, struct wlr_input_device* input_device){
     switch(input_device->type){
     case WLR_INPUT_DEVICE_KEYBOARD:
-        wlr_log(WLR_DEBUG, "New keyboard");
+        wlr_log(WLR_DEBUG, "[KEYBOARD] New keyboard");
 
         struct wm_keyboard* keyboard = calloc(1, sizeof(struct wm_keyboard));
         wm_keyboard_init(keyboard, seat, input_device);
@@ -145,7 +145,7 @@ void wm_seat_add_input_device(struct wm_seat* seat, struct wlr_input_device* inp
         break;
 
     case WLR_INPUT_DEVICE_POINTER:
-        wlr_log(WLR_DEBUG, "New pointer");
+        wlr_log(WLR_DEBUG, "[POINTER] New pointer");
 
         struct wm_pointer* pointer = calloc(1, sizeof(struct wm_pointer));
         wm_pointer_init(pointer, seat, input_device);
@@ -154,6 +154,8 @@ void wm_seat_add_input_device(struct wm_seat* seat, struct wlr_input_device* inp
         wm_cursor_add_pointer(seat->wm_cursor, pointer);
         break;
     case WLR_INPUT_DEVICE_TOUCH:
+      wlr_log(WLR_DEBUG,"[TOUCH] New touch device");
+      wlr_log(WLR_INFO,"[TOUCH] touch is currently WIP ~> refusing touch data")
     case WLR_INPUT_DEVICE_SWITCH:
     case WLR_INPUT_DEVICE_TABLET_TOOL:
     case WLR_INPUT_DEVICE_TABLET_PAD:
