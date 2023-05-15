@@ -155,7 +155,7 @@ void wm_seat_add_input_device(struct wm_seat* seat, struct wlr_input_device* inp
         break;
     case WLR_INPUT_DEVICE_TOUCH:
       wlr_log(WLR_DEBUG,"[TOUCH] New touch device");
-      wlr_log(WLR_INFO,"[TOUCH] touch is currently WIP ~> refusing touch data")
+      wlr_log(WLR_INFO,"[TOUCH] touch is currently WIP ~> refusing touch data");
     case WLR_INPUT_DEVICE_SWITCH:
     case WLR_INPUT_DEVICE_TABLET_TOOL:
     case WLR_INPUT_DEVICE_TABLET_PAD:
