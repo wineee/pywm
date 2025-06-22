@@ -131,4 +131,5 @@ python.extension_module(
     sources + py_sources,
     include_directories: incs,
     dependencies: deps + [python.dependency()],
+    subdir: 'pywm',
 )
