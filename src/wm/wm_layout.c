@@ -75,7 +75,7 @@ static void place(struct wm_layout* layout, struct wm_output* output){
 
 void wm_layout_add_output(struct wm_layout* layout, struct wlr_output* out){
     struct wm_output* output = calloc(1, sizeof(struct wm_output));
-    wm_output_init(output, layout->wm_server, out);
+    wm_output_init(output, layout->wm_server, layout, out);
     wl_list_insert(&layout->wm_outputs, &output->link);
 
     place(layout, output);

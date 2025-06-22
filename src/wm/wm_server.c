@@ -255,11 +255,7 @@ void wm_server_init(struct wm_server* server, struct wm_config* config){
 
 
     /* Compositor and protocols */
-    if(server->wm_renderer->wlr_renderer){
-        server->wlr_compositor = wlr_compositor_create(server->wl_display, 6, server->wm_renderer->wlr_renderer);
-    }else{
-        server->wlr_compositor = wlr_compositor_create(server->wl_display, 6, NULL);
-    }
+    server->wlr_compositor = wlr_compositor_create(server->wl_display, 6, server->wm_renderer->wlr_renderer);
     assert(server->wlr_compositor);
 
     server->wlr_subcompositor = 

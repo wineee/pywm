@@ -285,7 +285,7 @@ static double configure(struct wm_output* output){
     return scale;
 }
 
-void wm_output_init(struct wm_output *output, struct wm_server *server, struct wlr_output *wlr_output) {
+void wm_output_init(struct wm_output *output, struct wm_server *server, struct wm_layout *layout, struct wlr_output *wlr_output) {
     if(wm_output_overridden_name){
         strcpy(wlr_output->name, wm_output_overridden_name);
         wm_output_overridden_name = NULL;
@@ -293,8 +293,9 @@ void wm_output_init(struct wm_output *output, struct wm_server *server, struct w
     wlr_log(WLR_INFO, "New output: %s: %s (%s) - use name: '%s' to configure", wlr_output->make, wlr_output->model, wlr_output->description, wlr_output->name);
     
     output->wm_server = server;
+    output->wm_layout = layout;
     output->wlr_output = wlr_output;
-    wlr_output->data = output;
+    //wlr_output->data = output;
 
     output->layout_x = 0;
     output->layout_y = 0;

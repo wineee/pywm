@@ -116,7 +116,9 @@ bool wm_content_is_on_output(struct wm_content* content, struct wm_output* outpu
         .height = display_height
     };
 
-    return content->fixed_output == output || (wlr_output_layout_intersects(output->wm_layout->wlr_output_layout, output->wlr_output, &box) && content->fixed_output == NULL);
+    return content->fixed_output == output 
+        || (wlr_output_layout_intersects(output->wm_layout->wlr_output_layout, output->wlr_output, &box)
+            && content->fixed_output == NULL);
 }
 
 void wm_content_set_box(struct wm_content* content, double x, double y, double width, double height) {
