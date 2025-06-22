@@ -143,6 +143,9 @@ static void handle_map(struct wl_listener* listener, void* data){
 
     view->super.mapped = true;
 
+    /* Add view to the list of views */
+    wl_list_insert(&view->super.super.wm_server->wm_contents, &view->super.super.link);
+
     wm_layout_damage_from(
         view->super.super.wm_server->wm_layout,
         &view->super.super, NULL);
@@ -152,6 +155,9 @@ static void handle_map(struct wl_listener* listener, void* data){
 static void handle_unmap(struct wl_listener* listener, void* data){
     struct wm_view_xdg* view = wl_container_of(listener, view, unmap);
     view->super.mapped = false;
+
+    /* Remove view from the list of views */
+    wl_list_remove(&view->super.super.link);
 
     wm_layout_damage_whole(view->super.super.wm_server->wm_layout);
 }
@@ -514,6 +520,11 @@ void wm_view_xdg_init(struct wm_view_xdg* view, struct wm_server* server, struct
     view->request_show_window_menu.notify = &handle_show_window_menu;
     wl_signal_add(&surface->toplevel->events.request_show_window_menu, &view->request_show_window_menu);
 
+    /* Create scene node for this view */
+    struct wlr_scene_tree* scene_tree = wlr_scene_xdg_surface_create(&server->wlr_scene->tree, surface);
+    view->scene_node = &scene_tree->node;
+    view->scene_node->data = view;
+
     view->initialized = false;
 
     view->constrain_popups_to_toplevel = server->wm_config->constrain_popups_to_toplevel;
@@ -537,6 +548,11 @@ void wm_view_xdg_init(struct wm_view_xdg* view, struct wm_server* server, struct
 
 static void wm_view_xdg_destroy(struct wm_view* super){
     struct wm_view_xdg* view = wm_cast(wm_view_xdg, super);
+
+    /* Destroy scene node */
+    if (view->scene_node) {
+        wlr_scene_node_destroy(view->scene_node);
+    }
 
     struct wm_xdg_subsurface* subsurface;
     wl_list_for_each(subsurface, &view->subsurfaces, link){

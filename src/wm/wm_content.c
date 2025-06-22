@@ -9,6 +9,9 @@
 #include "wm/wm_output.h"
 #include "wm/wm_server.h"
 #include "wm/wm_layout.h"
+#include "wm/wm_view.h"
+#include "wm/wm_view_xdg.h"
+#include "wm/wm_util.h"
 
 struct wm_content_vtable wm_content_base_vtable;
 
@@ -134,6 +137,17 @@ void wm_content_set_box(struct wm_content* content, double x, double y, double w
     content->display_height = height;
     wm_layout_damage_from(content->wm_server->wm_layout, content, NULL);
 
+    /* Update scene node position if this is a view */
+    if (wm_content_is_view(content)) {
+        struct wm_view* view = wm_cast(wm_view, content);
+        if (wm_view_is_xdg(view)) {
+            struct wm_view_xdg* xdg_view = wm_cast(wm_view_xdg, view);
+            if (xdg_view->scene_node) {
+                wlr_scene_node_set_position(xdg_view->scene_node, x, y);
+            }
+        }
+    }
+
     wm_layout_update_content_outputs(content->wm_server->wm_layout, content);
 }
 
@@ -149,6 +163,18 @@ void wm_content_set_z_index(struct wm_content* content, double z_index){
 
     content->z_index = z_index;
     wm_layout_damage_from(content->wm_server->wm_layout, content, NULL);
+
+    /* Update scene node position if this is a view */
+    if (wm_content_is_view(content)) {
+        struct wm_view* view = wm_cast(wm_view, content);
+        if (wm_view_is_xdg(view)) {
+            struct wm_view_xdg* xdg_view = wm_cast(wm_view_xdg, view);
+            if (xdg_view->scene_node) {
+                /* Raise to top to ensure proper z-ordering */
+                wlr_scene_node_raise_to_top(xdg_view->scene_node);
+            }
+        }
+    }
 }
 
 double wm_content_get_z_index(struct wm_content* content){
@@ -160,6 +186,20 @@ void wm_content_set_opacity(struct wm_content* content, double opacity){
 
     content->opacity = opacity;
     wm_layout_damage_from(content->wm_server->wm_layout, content, NULL);
+
+    /* Update scene node opacity if this is a view */
+    if (wm_content_is_view(content)) {
+        struct wm_view* view = wm_cast(wm_view, content);
+        if (wm_view_is_xdg(view)) {
+            struct wm_view_xdg* xdg_view = wm_cast(wm_view_xdg, view);
+            if (xdg_view->scene_node) {
+                struct wlr_scene_buffer* scene_buffer = wlr_scene_buffer_from_node(xdg_view->scene_node);
+                if (scene_buffer) {
+                    wlr_scene_buffer_set_opacity(scene_buffer, opacity);
+                }
+            }
+        }
+    }
 }
 
 double wm_content_get_opacity(struct wm_content* content){
@@ -194,6 +234,22 @@ void wm_content_set_corner_radius(struct wm_content* content, double corner_radi
 
     content->corner_radius = corner_radius;
     wm_layout_damage_from(content->wm_server->wm_layout, content, NULL);
+
+    /* Update scene node corner radius if this is a view */
+    if (wm_content_is_view(content)) {
+        struct wm_view* view = wm_cast(wm_view, content);
+        if (wm_view_is_xdg(view)) {
+            struct wm_view_xdg* xdg_view = wm_cast(wm_view_xdg, view);
+            if (xdg_view->scene_node) {
+                struct wlr_scene_buffer* scene_buffer = wlr_scene_buffer_from_node(xdg_view->scene_node);
+                if (scene_buffer) {
+                    /* Note: wlr_scene doesn't directly support corner radius,
+                     * but we can set the opaque region to achieve a similar effect */
+                    /* For now, we'll just update the content's corner radius */
+                }
+            }
+        }
+    }
 }
 
 void wm_content_set_lock_enabled(struct wm_content* content, bool lock_enabled){

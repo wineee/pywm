@@ -21,6 +21,7 @@
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_presentation_time.h>
+#include <wlr/types/wlr_scene.h>
 
 /* #define DEBUG_DAMAGE_HIGHLIGHT */
 /* #define DEBUG_DAMAGE_RERENDER */
@@ -28,8 +29,13 @@
 struct wm_content_vtable wm_output_vtable;
 
 // Forward declarations
-static void render(struct wm_output *output, struct timespec now, pixman_region32_t *damage);
 static double configure(struct wm_output* output);
+
+/* Send frame done event to a surface */
+static void send_frame_done(struct wlr_scene_buffer *scene_buffer, int sx, int sy, void *data) {
+    struct timespec *now = data;
+    wlr_scene_buffer_send_frame_done(scene_buffer, now);
+}
 
 /*
  * Callbacks
@@ -43,6 +49,10 @@ static void handle_destroy(struct wl_listener *listener, void *data) {
 static void handle_commit(struct wl_listener *listener, void *data) {
     struct wm_output *output = wl_container_of(listener, output, commit);
     struct wlr_output_event_commit* event = data;
+
+    if (!output->wlr_output->enabled) {
+        return;
+    }
 
     if(event->state->committed & (WLR_OUTPUT_STATE_MODE |
             WLR_OUTPUT_STATE_TRANSFORM |
@@ -71,130 +81,25 @@ static void handle_frame(struct wl_listener *listener, void *data) {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
 
-    int buffer_age;
-    pixman_region32_t damage;
-    pixman_region32_init(&damage);
-    
-    if (!wlr_output_attach_render(output->wlr_output, &buffer_age)) {
-        pixman_region32_fini(&damage);
-        return;
-    }
-
-    wlr_damage_ring_get_buffer_damage(&output->damage_ring, buffer_age, &damage);
-    if (!output->wlr_output->needs_frame &&
-            !pixman_region32_not_empty(&output->damage_ring.current)) {
-        pixman_region32_fini(&damage);
-        wlr_output_rollback(output->wlr_output);
-        return;
-    }
-
-    render(output, now, &damage);
-
-    pixman_region32_fini(&damage);
-    wlr_damage_ring_rotate(&output->damage_ring);
-}
-
-static void handle_needs_frame(struct wl_listener *listener, void *data) {
-    struct wm_output *output = wl_container_of(listener, output, needs_frame);
-    wlr_output_schedule_frame(output->wlr_output);
-}
-
-static void render(struct wm_output *output, struct timespec now, pixman_region32_t *damage) {
-    struct wm_renderer *renderer = output->wm_server->wm_renderer;
-
-    int width, height;
-    wlr_output_transformed_resolution(output->wlr_output, &width, &height);
-
-    /* Ensure z-indes */
+    /* Ensure z-index */
     wm_server_update_contents(output->wm_server);
 
-    /* Begin render */
-    wm_renderer_begin(renderer, output);
+    /* Render the scene if needed and commit the output */
+    wlr_scene_output_commit(output->scene_output, NULL);
 
-#ifdef DEBUG_DAMAGE_HIGHLIGHT
-    wlr_renderer_clear(renderer->wlr_renderer, (float[]){1, 1, 0, 1});
-#endif
-
-    /* 
-     * This does not catch all cases, where clearing is necessary - specifically, if only the texture contains transparency,
-     * but compositor opacaity is set to 1, needs_clear will be false.
-     *
-     * In the end the assumption is there's always a background and this catches a fading out background */
-    bool needs_clear = false;
-    struct wm_content *r;
-    wl_list_for_each_reverse(r, &output->wm_server->wm_contents, link) {
-        if(wm_content_get_opacity(r) < 1. - 0.0001){
-            needs_clear=true;
-            break;
-        }
-    }
-
-    struct wm_compose_chain* chain = wm_compose_chain_from_damage(output->wm_server, output, damage);
-
-    struct wm_compose_chain* last = chain;
-    while(last->lower) last = last->lower;
-
-    if(needs_clear){
-        wm_renderer_to_buffer(renderer, 0);
-        wm_renderer_clear(renderer, damage, (float[]){ 0., 0., 0., 1.});
-
-        if(last != chain){
-            wm_renderer_to_buffer(renderer, 1);
-            wm_renderer_clear(renderer, &last->damage, (float[]){ 0., 0., 0., 1.});
-        }
-    }
-
-    if(last != chain){
-        wm_renderer_to_buffer(renderer, 1);
-    }
-
-    /* Do render */
-    for(struct wm_compose_chain* at=last; at; at=at->higher){
-        wl_list_for_each_reverse(r, &output->wm_server->wm_contents, link) {
-            if(at->lower && wm_content_get_z_index(r) < at->lower->z_index) continue;
-            if(wm_content_get_z_index(r) > at->z_index) break;
-
-            if(wm_content_get_opacity(r) < 0.0001) continue;
-            wm_content_render(r, output, &at->damage, now);
-        }
-        if(at->composite){
-            wm_composite_apply(at->composite, output, &at->composite_output, now);
-        }
-    }
-
-    if(last != chain){
-        wm_renderer_to_buffer(renderer, 1);
-    }
-
-    /* End render */
-    wm_renderer_end(renderer, &chain->damage, output);
-    wm_compose_chain_free(chain);
-
-    /* Commit */
-    pixman_region32_t frame_damage;
-    pixman_region32_init(&frame_damage);
-
-    enum wl_output_transform transform =
-        wlr_output_transform_invert(output->wlr_output->transform);
-    wlr_region_transform(&frame_damage, &output->damage_ring.current, transform,
-                         width, height);
-
-#ifdef DEBUG_DAMAGE_HIGHLIGHT
-    pixman_region32_union_rect(&frame_damage, &frame_damage, 0, 0, width, height);
-#endif
-
-    wlr_output_set_damage(output->wlr_output, &frame_damage);
-    pixman_region32_fini(&frame_damage);
-
-    if (!wlr_output_commit(output->wlr_output)) {
-        wlr_log(WLR_DEBUG, "Commit frame failed");
-    }
+    /* Send frame done events */
+    wlr_scene_output_for_each_buffer(output->scene_output, send_frame_done, &now);
 
     /* 
      * Synchronous update is best scheduled immediately after frame
      */
     DEBUG_PERFORMANCE(present_frame, output->key);
     wm_server_schedule_update(output->wm_server, output);
+}
+
+static void handle_needs_frame(struct wl_listener *listener, void *data) {
+    struct wm_output *output = wl_container_of(listener, output, needs_frame);
+    wlr_output_schedule_frame(output->wlr_output);
 }
 
 /*
@@ -247,17 +152,13 @@ static double configure(struct wm_output* output){
         int w = config ? config->width : 0;
         int h = config ? config->height : 0;
         int mHz = config ? config->mHz : 0;
-        if(w <= 0){
-            wlr_log(WLR_INFO, "Output: Need to configure width for custom mode - defaulting to 1920");
-            w = 1920;
+        if(w <= 0 || h <= 0 || mHz <= 0) {
+            wlr_log(WLR_INFO, "Output: Invalid mode");
+        } else {
+            dpi = output->wlr_output->phys_width > 0 ? (double)w * 25.4 / output->wlr_output->phys_width : 0;
+            wlr_log(WLR_INFO, "Output: Setting custom mode - %dx%d(%d)", w, h, mHz);
+            wlr_output_set_custom_mode(output->wlr_output, w, h, mHz);
         }
-        if(h <= 0){
-            wlr_log(WLR_INFO, "Output: Need to configure height for custom mode - defaulting to 1280");
-            h = 1280;
-        }
-        dpi = output->wlr_output->phys_width > 0 ? (double)w * 25.4 / output->wlr_output->phys_width : 0;
-        wlr_log(WLR_INFO, "Output: Setting custom mode - %dx%d(%d)", w, h, mHz);
-        wlr_output_set_custom_mode(output->wlr_output, w, h, mHz);
     }
 
     enum wl_output_transform transform = config ? config->transform : WL_OUTPUT_TRANSFORM_NORMAL;
@@ -307,6 +208,9 @@ void wm_output_init(struct wm_output *output, struct wm_server *server, struct w
 
     wlr_damage_ring_init(&output->damage_ring);
 
+    /* Create scene output */
+    output->scene_output = wlr_scene_output_create(server->wlr_scene, wlr_output);
+
     double scale = configure(output);
 
     output->destroy.notify = &handle_destroy;
@@ -349,10 +253,15 @@ void wm_output_destroy(struct wm_output *output) {
     wl_list_remove(&output->frame.link);
     wl_list_remove(&output->needs_frame.link);
 
-    wlr_damage_ring_finish(&output->damage_ring);
+    /* Destroy scene output */
+    if (output->scene_output) {
+        wlr_scene_output_destroy(output->scene_output);
+    }
 
-    output->wlr_output->data = NULL;
-    output->wlr_output = NULL;
+    wlr_damage_ring_finish(&output->damage_ring);
+#if WM_CUSTOM_RENDERER
+    wm_renderer_buffers_destroy(output->renderer_buffers);
+#endif
 
     free(output);
 }

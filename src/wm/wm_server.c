@@ -187,11 +187,13 @@ static void handle_new_xdg_decoration(struct wl_listener* listener, void* data){
 
 }
 
+#ifdef WM_HAS_XWAYLAND
 static void handle_ready(struct wl_listener* listener, void* data){
     wlr_log(WLR_DEBUG, "Server: Ready");
 
     wm_callback_ready();
 }
+#endif
 
 static int callback_timer_handler(void* data){
     struct wm_server* server = data;
@@ -297,6 +299,10 @@ void wm_server_init(struct wm_server* server, struct wm_config* config){
     /* Children */
     server->wm_layout = calloc(1, sizeof(struct wm_layout));
     wm_layout_init(server->wm_layout, server);
+
+    /* Create scene graph */
+    server->wlr_scene = wlr_scene_create();
+    wlr_scene_attach_output_layout(server->wlr_scene, server->wm_layout->wlr_output_layout);
 
     wlr_xdg_output_manager_v1_create(server->wl_display, server->wm_layout->wlr_output_layout);
 

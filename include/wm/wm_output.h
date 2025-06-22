@@ -4,6 +4,7 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_damage_ring.h>
+#include <wlr/types/wlr_scene.h>
 
 struct wm_layout;
 struct wm_renderer_buffers;
@@ -20,6 +21,7 @@ struct wm_output {
 
     struct wlr_output* wlr_output;
     struct wlr_damage_ring damage_ring;
+    struct wlr_scene_output* scene_output;
 
     struct wl_listener destroy;
     struct wl_listener commit;

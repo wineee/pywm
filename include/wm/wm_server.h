@@ -11,6 +11,7 @@
 #include <wlr/types/wlr_virtual_keyboard_v1.h>
 #include <wlr/types/wlr_virtual_pointer_v1.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
+#include <wlr/types/wlr_scene.h>
 
 struct wm_config;
 struct wm_seat;
@@ -43,6 +44,8 @@ struct wm_server{
     struct wlr_virtual_keyboard_manager_v1* wlr_virtual_keyboard_manager;
     struct wlr_virtual_pointer_manager_v1* wlr_virtual_pointer_manager;
     struct wlr_layer_shell_v1* wlr_layer_shell;
+
+    struct wlr_scene* wlr_scene;
 
     struct wm_renderer* wm_renderer;
     struct wm_seat* wm_seat;
