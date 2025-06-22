@@ -16,7 +16,7 @@
 
 #ifdef WM_CUSTOM_RENDERER
 
-#include <render/gles2.h>
+#include <wlr/render/gles2.h>
 #include "wm/shaders/wm_shaders.h"
 
 #include "quad_shaders.c"
@@ -497,7 +497,7 @@ void wm_renderer_init(struct wm_renderer *renderer, struct wm_server *server) {
         wlr_log(WLR_INFO, "Not using GLES2 - PyWM custom renderer disabled");
     }
 #else
-    renderer->mode = WM_RENDERER_PASSTHROUGH;
+    renderer->mode = WM_RENDERER_WLR;
 #endif
 
 }
@@ -1094,7 +1094,7 @@ void wm_renderer_ensure_mode(struct wm_renderer* renderer, enum wm_renderer_mode
             renderer->mode = WM_RENDERER_WLR;
         }
 #else
-        renderer->mode = WM_RENDERER_PASSTHROUGH;
+        renderer->mode = WM_RENDERER_WLR;
 #endif
     }
 }

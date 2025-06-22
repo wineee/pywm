@@ -25,18 +25,10 @@
           # BEGIN f**king subprojects bug workaround for 'src = ./.'
           srcs = [
             ./.
-            (builtins.fetchGit {
-              url = "https://gitlab.freedesktop.org/wlroots/wlroots.git";
-              rev = "e279266f714c7122e9ad97d56d047313f78cfdbe"; # wlroots 16
-              submodules = true;
-            })
           ];
 
           setSourceRoot = ''
             for i in ./*; do
-              if [ -f "$i/wlroots.syms" ]; then
-                wlrootsDir=$i
-              fi
               if [ -f "$i/pywm/pywm.py" ]; then
                 sourceRoot=$i
               fi
@@ -45,19 +37,9 @@
 
           preConfigure = ''
             echo "--- Pre-configure --------------"
-            echo "  wlrootsDir=$wlrootsDir"
             echo "  sourceRoot=$sourceRoot"
             echo "--- ls -------------------------"
             ls -al
-            echo "--- ls ../wlrootsDir -----------"
-            ls -al ../$wlrootsDir
-
-            rm -rf ./subprojects/wlroots 2> /dev/null
-            cp -r ../$wlrootsDir ./subprojects/wlroots
-            rm -rf ./build
-
-            echo "--- ls ./subprojects/wlroots ---"
-            ls -al ./subprojects/wlroots/
             echo "--------------------------------"
           '';
           # END F**king subprojects bug workaround
@@ -132,6 +114,7 @@
 
           buildInputs = with pkgs; [ 
             libGL
+            libdrm
             wayland
             wayland-protocols
             libinput
@@ -152,6 +135,7 @@
             xorg.xcbutilimage
             xorg.libX11
             xwayland
+            wlroots_0_17
           ];
 
         };

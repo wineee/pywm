@@ -158,6 +158,8 @@ static void handle_new_server_decoration(struct wl_listener* listener, void* dat
 }
 
 static void handle_new_xdg_decoration(struct wl_listener* listener, void* data){
+    /*
+    // FIXME： rewine
     struct wm_server* server = wl_container_of(listener, server, new_xdg_decoration);
     struct wlr_xdg_toplevel_decoration_v1* wlr_deco = data;
 
@@ -181,7 +183,7 @@ static void handle_new_xdg_decoration(struct wl_listener* listener, void* data){
                 wlr_deco, server->wm_config->encourage_csd ?
                 WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE :
                 WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-    }
+    }*/
 
 }
 
@@ -236,7 +238,7 @@ void wm_server_init(struct wm_server* server, struct wm_config* config){
     assert(server->wl_display);
 
     /* Backend */
-    server->wlr_backend = wlr_backend_autocreate(server->wl_display);
+    server->wlr_backend = wlr_backend_autocreate(server->wl_display, NULL);
     assert(server->wlr_backend);
 
     /* Renderer */
@@ -244,8 +246,7 @@ void wm_server_init(struct wm_server* server, struct wm_config* config){
     wm_renderer_init(server->wm_renderer, server);
 
     /* Allocator */
-    server->wlr_allocator = wlr_allocator_autocreate(server->wlr_backend,
-        server->wm_renderer->wlr_renderer);
+    server->wlr_allocator = wlr_allocator_autocreate(server->wlr_backend, server->wm_renderer->wlr_renderer);
 
     /* Event loop */
     server->wl_event_loop = 
@@ -254,8 +255,11 @@ void wm_server_init(struct wm_server* server, struct wm_config* config){
 
 
     /* Compositor and protocols */
-    server->wlr_compositor = 
-        wlr_compositor_create(server->wl_display, server->wm_renderer->wlr_renderer);
+    if(server->wm_renderer->wlr_renderer){
+        server->wlr_compositor = wlr_compositor_create(server->wl_display, 6, server->wm_renderer->wlr_renderer);
+    }else{
+        server->wlr_compositor = wlr_compositor_create(server->wl_display, 6, NULL);
+    }
     assert(server->wlr_compositor);
 
     server->wlr_subcompositor = 
@@ -264,10 +268,10 @@ void wm_server_init(struct wm_server* server, struct wm_config* config){
     server->wlr_data_device_manager = wlr_data_device_manager_create(server->wl_display);
     assert(server->wlr_data_device_manager);
 
-    server->wlr_xdg_shell = wlr_xdg_shell_create(server->wl_display);
+    server->wlr_xdg_shell = wlr_xdg_shell_create(server->wl_display, 5);
     assert(server->wlr_xdg_shell);
 
-    server->wlr_layer_shell = wlr_layer_shell_v1_create(server->wl_display);
+    server->wlr_layer_shell = wlr_layer_shell_v1_create(server->wl_display, 4);
     assert(server->wlr_layer_shell);
 
     server->wlr_server_decoration_manager = wlr_server_decoration_manager_create(server->wl_display);

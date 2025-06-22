@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <drm_fourcc.h>
+#include <libdrm/drm_fourcc.h>
 
 #include "wm/wm.h"
 #include "wm/wm_widget.h"

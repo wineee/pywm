@@ -333,11 +333,12 @@ void wm_xdg_subsurface_init(struct wm_xdg_subsurface* subsurface, struct wm_view
 
     wl_list_init(&subsurface->subsurfaces);
 
+    // wlroots 0.17: use wlr_surface events instead of subsurface events
     subsurface->map.notify = &subsurface_handle_map;
-    wl_signal_add(&wlr_subsurface->events.map, &subsurface->map);
+    wl_signal_add(&wlr_subsurface->surface->events.map, &subsurface->map);
 
     subsurface->unmap.notify = &subsurface_handle_unmap;
-    wl_signal_add(&wlr_subsurface->events.unmap, &subsurface->unmap);
+    wl_signal_add(&wlr_subsurface->surface->events.unmap, &subsurface->unmap);
 
     subsurface->destroy.notify = &subsurface_handle_destroy;
     wl_signal_add(&wlr_subsurface->events.destroy, &subsurface->destroy);
@@ -382,11 +383,12 @@ void wm_popup_xdg_init(struct wm_popup_xdg* popup, struct wm_view_xdg* toplevel,
     wl_list_init(&popup->subsurfaces);
     wl_list_init(&popup->popups);
 
+    // wlroots 0.17: use wlr_surface events instead of xdg surface events
     popup->map.notify = &popup_handle_map;
-    wl_signal_add(&wlr_xdg_popup->base->events.map, &popup->map);
+    wl_signal_add(&wlr_xdg_popup->base->surface->events.map, &popup->map);
 
     popup->unmap.notify = &popup_handle_unmap;
-    wl_signal_add(&wlr_xdg_popup->base->events.unmap, &popup->unmap);
+    wl_signal_add(&wlr_xdg_popup->base->surface->events.unmap, &popup->unmap);
 
     popup->destroy.notify = &popup_handle_destroy;
     wl_signal_add(&wlr_xdg_popup->base->events.destroy, &popup->destroy);
@@ -469,11 +471,12 @@ void wm_view_xdg_init(struct wm_view_xdg* view, struct wm_server* server, struct
     wl_list_init(&view->popups);
     wl_list_init(&view->subsurfaces);
 
+    // wlroots 0.17: use wlr_surface events instead of xdg surface events
     view->map.notify = &handle_map;
-    wl_signal_add(&surface->events.map, &view->map);
+    wl_signal_add(&surface->surface->events.map, &view->map);
 
     view->unmap.notify = &handle_unmap;
-    wl_signal_add(&surface->events.unmap, &view->unmap);
+    wl_signal_add(&surface->surface->events.unmap, &view->unmap);
 
     view->destroy.notify = &handle_destroy;
     wl_signal_add(&surface->events.destroy, &view->destroy);
@@ -714,8 +717,8 @@ struct for_each_surface_data {
 static void call_surface_iterator(struct wlr_surface* surface, int sx, int sy, void* data){
     struct for_each_surface_data* fedata = data;
     struct wlr_surface* root = surface;
-    while(root && wlr_surface_is_subsurface(root)){
-        root = wlr_subsurface_from_wlr_surface(root)->parent;
+    while(root && wlr_subsurface_try_from_wlr_surface(root)){
+        root = wlr_subsurface_try_from_wlr_surface(root)->parent;
     }
     fedata->iterator(surface, sx, sy, root == fedata->constrained_root, fedata->user_data);
 }

@@ -134,32 +134,30 @@ void wm_seat_destroy(struct wm_seat* seat) {
 
 void wm_seat_add_input_device(struct wm_seat* seat, struct wlr_input_device* input_device){
     switch(input_device->type){
-    case WLR_INPUT_DEVICE_KEYBOARD:
-        wlr_log(WLR_DEBUG, "[KEYBOARD] New keyboard");
-
-        struct wm_keyboard* keyboard = calloc(1, sizeof(struct wm_keyboard));
-        wm_keyboard_init(keyboard, seat, input_device);
-        wl_list_insert(&seat->wm_keyboards, &keyboard->link);
-
-        wlr_seat_set_keyboard(seat->wlr_seat, keyboard->wlr_input_device);
-        break;
-
-    case WLR_INPUT_DEVICE_POINTER:
-        wlr_log(WLR_DEBUG, "[POINTER] New pointer");
-
-        struct wm_pointer* pointer = calloc(1, sizeof(struct wm_pointer));
-        wm_pointer_init(pointer, seat, input_device);
-        wl_list_insert(&seat->wm_pointers, &pointer->link);
-
-        wm_cursor_add_pointer(seat->wm_cursor, pointer);
-        break;
-    case WLR_INPUT_DEVICE_TOUCH:
-      wlr_log(WLR_DEBUG,"[TOUCH] New touch device");
-      wlr_log(WLR_INFO,"[TOUCH] touch is currently WIP ~> refusing touch data");
-    case WLR_INPUT_DEVICE_SWITCH:
-    case WLR_INPUT_DEVICE_TABLET_TOOL:
-    case WLR_INPUT_DEVICE_TABLET_PAD:
-        wlr_log(WLR_DEBUG, "Unsupported input device");
+        case WLR_INPUT_DEVICE_KEYBOARD:
+            wlr_log(WLR_DEBUG, "Adding keyboard");
+            struct wm_keyboard* keyboard = calloc(1, sizeof(struct wm_keyboard));
+            wm_keyboard_init(keyboard, seat, input_device);
+            wl_list_insert(&seat->wm_keyboards, &keyboard->link);
+            wlr_seat_set_keyboard(seat->wlr_seat, wlr_keyboard_from_input_device(input_device));
+            break;
+        case WLR_INPUT_DEVICE_POINTER:
+            wlr_log(WLR_DEBUG, "Adding pointer");
+            struct wm_pointer* pointer = calloc(1, sizeof(struct wm_pointer));
+            wm_pointer_init(pointer, seat, input_device);
+            wl_list_insert(&seat->wm_pointers, &pointer->link);
+            wm_cursor_add_pointer(seat->wm_cursor, pointer);
+            break;
+        case WLR_INPUT_DEVICE_TOUCH:
+           wlr_log(WLR_DEBUG,"[TOUCH] New touch device");
+           wlr_log(WLR_INFO,"[TOUCH] touch is currently WIP ~> refusing touch data");
+        case WLR_INPUT_DEVICE_SWITCH:
+        case WLR_INPUT_DEVICE_TABLET_TOOL:
+        case WLR_INPUT_DEVICE_TABLET_PAD:
+            wlr_log(WLR_DEBUG, "Unsupported input device");
+        default:
+            wlr_log(WLR_DEBUG, "Ignoring input device of type %d", input_device->type);
+            break;
     }
 
     uint32_t capabilities = 0;
@@ -224,14 +222,16 @@ void wm_seat_focus_surface(struct wm_seat* seat, struct wlr_surface* surface){
 
 }
 
-void wm_seat_dispatch_key(struct wm_seat* seat, struct wlr_input_device* input_device, struct wlr_event_keyboard_key* event){
-    wlr_seat_set_keyboard(seat->wlr_seat, input_device);
+void wm_seat_dispatch_key(struct wm_seat* seat, struct wlr_input_device* input_device, struct wlr_keyboard_key_event* event){
+    struct wlr_keyboard* keyboard = wlr_keyboard_from_input_device(input_device);
+    wlr_seat_set_keyboard(seat->wlr_seat, keyboard);
     wlr_seat_keyboard_notify_key(seat->wlr_seat, event->time_msec, event->keycode, event->state);
 }
 
 void wm_seat_dispatch_modifiers(struct wm_seat* seat, struct wlr_input_device* input_device){
-    wlr_seat_set_keyboard(seat->wlr_seat, input_device);
-    wlr_seat_keyboard_notify_modifiers(seat->wlr_seat, &input_device->keyboard->modifiers);
+    struct wlr_keyboard* keyboard = wlr_keyboard_from_input_device(input_device);
+    wlr_seat_set_keyboard(seat->wlr_seat, keyboard);
+    wlr_seat_keyboard_notify_modifiers(seat->wlr_seat, &keyboard->modifiers);
 }
 
 
@@ -276,7 +276,7 @@ Guard:
 }
 
 
-void wm_seat_dispatch_button(struct wm_seat* seat, struct wlr_event_pointer_button* event){
+void wm_seat_dispatch_button(struct wm_seat* seat, struct wlr_pointer_button_event* event){
     struct wlr_surface* surface;
     double sx;
     double sy;
@@ -299,7 +299,7 @@ void wm_seat_dispatch_button(struct wm_seat* seat, struct wlr_event_pointer_butt
         seat->seatop_down.active = false;
     }
 }
-void wm_seat_dispatch_axis(struct wm_seat* seat, struct wlr_event_pointer_axis* event){
+void wm_seat_dispatch_axis(struct wm_seat* seat, struct wlr_pointer_axis_event* event){
     struct wlr_surface* surface;
     double sx;
     double sy;

@@ -26,29 +26,32 @@ static void handle_destroy(struct wl_listener* listener, void* data){
 
 static void handle_key(struct wl_listener* listener, void* data){
     struct wm_keyboard* keyboard = wl_container_of(listener, keyboard, key);
-    struct wlr_event_keyboard_key* event = data;
+    struct wlr_keyboard_key_event* event = data;
 
+    struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(keyboard->wlr_input_device);
     xkb_keycode_t keycode = event->keycode + 8;
     size_t keysyms_len;
     const xkb_keysym_t* keysyms;
 
     xkb_layout_index_t layout_index = xkb_state_key_get_layout(
-            keyboard->wlr_input_device->keyboard->xkb_state, keycode);
+            wlr_keyboard->xkb_state, keycode);
     keysyms_len = xkb_keymap_key_get_syms_by_level(
-            keyboard->wlr_input_device->keyboard->keymap,
+            wlr_keyboard->keymap,
             keycode, layout_index, 0, &keysyms);
 
     /* Translated logic consuming modifiers */
     size_t keysyms_trans_len;
     const xkb_keysym_t* keysyms_trans;
     keysyms_trans_len = xkb_state_key_get_syms(
-            keyboard->wlr_input_device->keyboard->xkb_state, keycode, &keysyms_trans);
+            wlr_keyboard->xkb_state, keycode, &keysyms_trans);
 
     /* Copied from sway - switch VT on CTRL-ALT-Fx */
     for (size_t i = 0; i < keysyms_trans_len; ++i) {
         xkb_keysym_t keysym = keysyms_trans[i];
         if (keysym >= XKB_KEY_XF86Switch_VT_1 &&
             keysym <= XKB_KEY_XF86Switch_VT_12) {
+            /*
+            // FIXME: rewine
             if (wlr_backend_is_multi(
                     keyboard->wm_seat->wm_server->wlr_backend)) {
                 struct wlr_session *session = wlr_backend_get_session(
@@ -58,6 +61,7 @@ static void handle_key(struct wl_listener* listener, void* data){
                     wlr_session_change_vt(session, vt);
                 }
             }
+            */
             return;
         }
     }
@@ -85,8 +89,9 @@ static void handle_key(struct wl_listener* listener, void* data){
 
 static void handle_modifiers(struct wl_listener* listener, void* data){
     struct wm_keyboard* keyboard = wl_container_of(listener, keyboard, modifiers);
+    struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(keyboard->wlr_input_device);
 
-    if(wm_callback_modifiers(&keyboard->wlr_input_device->keyboard->modifiers)){
+    if(wm_callback_modifiers(&wlr_keyboard->modifiers)){
         return;
     }
 
@@ -106,11 +111,12 @@ void wm_keyboard_init(struct wm_keyboard* keyboard, struct wm_seat* seat, struct
     keyboard->destroy.notify = handle_destroy;
     wl_signal_add(&keyboard->wlr_input_device->events.destroy, &keyboard->destroy);
 
+    struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(keyboard->wlr_input_device);
     keyboard->key.notify = handle_key;
-    wl_signal_add(&keyboard->wlr_input_device->keyboard->events.key, &keyboard->key);
+    wl_signal_add(&wlr_keyboard->events.key, &keyboard->key);
 
     keyboard->modifiers.notify = handle_modifiers;
-    wl_signal_add(&keyboard->wlr_input_device->keyboard->events.modifiers, &keyboard->modifiers);
+    wl_signal_add(&wlr_keyboard->events.modifiers, &keyboard->modifiers);
 }
 
 void wm_keyboard_destroy(struct wm_keyboard* keyboard){
@@ -132,8 +138,9 @@ void wm_keyboard_reconfigure(struct wm_keyboard* keyboard){
 
     struct xkb_keymap* keymap = xkb_map_new_from_names(context, &rules, XKB_KEYMAP_COMPILE_NO_FLAGS);
     if(keymap){
-        wlr_keyboard_set_keymap(keyboard->wlr_input_device->keyboard, keymap);
-        wlr_keyboard_set_repeat_info(keyboard->wlr_input_device->keyboard, 25, 600);
+        struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(keyboard->wlr_input_device);
+        wlr_keyboard_set_keymap(wlr_keyboard, keymap);
+        wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
 
         xkb_keymap_unref(keymap);
     }else{

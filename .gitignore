@@ -10,3 +10,9 @@ subprojects
 .mypy_cache
 pywm.egg-info
 _pywm.so
+.specstory
+.cache
+.cursorindexingignore
+.direnv
+
+

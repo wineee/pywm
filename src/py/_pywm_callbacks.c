@@ -69,7 +69,7 @@ static void call_layout_change(struct wm_layout* layout){
     }
 }
 
-static bool call_key(struct wlr_event_keyboard_key* event, const char* keysyms){
+static bool call_key(struct wlr_keyboard_key_event* event, const char* keysyms){
     if(callbacks.key){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(iiis)", event->time_msec, event->keycode, event->state, keysyms);
@@ -106,7 +106,7 @@ static bool call_motion(double delta_x, double delta_y, double abs_x, double abs
 }
 
 
-static bool call_button(struct wlr_event_pointer_button* event){
+static bool call_button(struct wlr_pointer_button_event* event){
     if(callbacks.button){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(iii)", event->time_msec, event->button, event->state);
@@ -118,7 +118,7 @@ static bool call_button(struct wlr_event_pointer_button* event){
     return false;
 }
 
-static bool call_axis(struct wlr_event_pointer_axis* event){
+static bool call_axis(struct wlr_pointer_axis_event* event){
     if(callbacks.axis){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(iiidi)", event->time_msec, event->source, event->orientation,
@@ -131,7 +131,7 @@ static bool call_axis(struct wlr_event_pointer_axis* event){
     return false;
 }
 
-static bool call_pinch_begin(struct wlr_event_pointer_pinch_begin* event){
+static bool call_pinch_begin(struct wlr_pointer_pinch_begin_event* event){
     if(callbacks.gesture){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(sii)", "pinch", event->time_msec, event->fingers);
@@ -142,7 +142,7 @@ static bool call_pinch_begin(struct wlr_event_pointer_pinch_begin* event){
 
     return false;
 }
-static bool call_pinch_update(struct wlr_event_pointer_pinch_update* event){
+static bool call_pinch_update(struct wlr_pointer_pinch_update_event* event){
     if(callbacks.gesture){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(siidddd)", "pinch", event->time_msec, event->fingers, event->dx, event->dy, event->rotation, event->scale);
@@ -153,7 +153,7 @@ static bool call_pinch_update(struct wlr_event_pointer_pinch_update* event){
 
     return false;
 }
-static bool call_pinch_end(struct wlr_event_pointer_pinch_end* event){
+static bool call_pinch_end(struct wlr_pointer_pinch_end_event* event){
     if(callbacks.gesture){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(sii)", "pinch", event->time_msec, event->cancelled);
@@ -164,7 +164,7 @@ static bool call_pinch_end(struct wlr_event_pointer_pinch_end* event){
 
     return false;
 }
-static bool call_swipe_begin(struct wlr_event_pointer_swipe_begin* event){
+static bool call_swipe_begin(struct wlr_pointer_swipe_begin_event* event){
     if(callbacks.gesture){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(sii)", "swipe", event->time_msec, event->fingers);
@@ -175,7 +175,7 @@ static bool call_swipe_begin(struct wlr_event_pointer_swipe_begin* event){
 
     return false;
 }
-static bool call_swipe_update(struct wlr_event_pointer_swipe_update* event){
+static bool call_swipe_update(struct wlr_pointer_swipe_update_event* event){
     if(callbacks.gesture){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(siidd)", "swipe", event->time_msec, event->fingers, event->dx, event->dy);
@@ -186,7 +186,7 @@ static bool call_swipe_update(struct wlr_event_pointer_swipe_update* event){
 
     return false;
 }
-static bool call_swipe_end(struct wlr_event_pointer_swipe_end* event){
+static bool call_swipe_end(struct wlr_pointer_swipe_end_event* event){
     if(callbacks.gesture){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(sii)", "swipe", event->time_msec, event->cancelled);
@@ -197,7 +197,7 @@ static bool call_swipe_end(struct wlr_event_pointer_swipe_end* event){
 
     return false;
 }
-static bool call_hold_begin(struct wlr_event_pointer_hold_begin* event){
+static bool call_hold_begin(struct wlr_pointer_hold_begin_event* event){
     if(callbacks.gesture){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(sii)", "hold", event->time_msec, event->fingers);
@@ -208,7 +208,7 @@ static bool call_hold_begin(struct wlr_event_pointer_hold_begin* event){
 
     return false;
 }
-static bool call_hold_end(struct wlr_event_pointer_hold_end* event){
+static bool call_hold_end(struct wlr_pointer_hold_end_event* event){
     if(callbacks.gesture){
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* args = Py_BuildValue("(sii)", "hold", event->time_msec, event->cancelled);

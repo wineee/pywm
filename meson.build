@@ -38,13 +38,13 @@ wayland_protos = dependency('wayland-protocols', version: '>=1.14')
 xkbcommon      = dependency('xkbcommon')
 libinput       = dependency('libinput')
 pixman         = dependency('pixman-1')
+wlroots        = dependency('wlroots', version: ['>=0.17.0', '<0.18'])
 xwayland       = dependency('xwayland', required: false)
 pthread        = meson.get_compiler('c').find_library('pthread')
 math           = meson.get_compiler('c').find_library('m')
 
 has_xwayland = xwayland.found() and get_option('xwayland').enabled()
 
-wlroots        = subproject('wlroots', default_options: ['default_library=static']).get_variable('wlroots')
 
 if has_xwayland
     add_project_arguments(
